@@ -5,11 +5,11 @@
 
 void Input::Initialize(WinApp* winApp)
 {
-	this->winApp = winApp;
+	
 	HRESULT result;
-
+	this->winApp = winApp;
 	ComPtr<IDirectInput8>directInput;
-	result = DirectInput8Create(winApp->GetHInstance(), DIRECTINPUT_VERSION, IID_IDirectInput8, (void**)&directInput, nullptr);
+	result = DirectInput8Create(this->winApp->GetHInstance(), DIRECTINPUT_VERSION, IID_IDirectInput8, (void**)&directInput, nullptr);
 	assert(SUCCEEDED(result));
 
 	result = directInput->CreateDevice(GUID_SysKeyboard, &keyboard, NULL);
@@ -18,17 +18,17 @@ void Input::Initialize(WinApp* winApp)
 	result = keyboard->SetDataFormat(&c_dfDIKeyboard);
 	assert(SUCCEEDED(result));
 
-	result = keyboard->SetCooperativeLevel(winApp->GetHwnd(), DISCL_FOREGROUND | DISCL_NONEXCLUSIVE | DISCL_NOWINKEY);
+	result = keyboard->SetCooperativeLevel(this->winApp->GetHwnd(), DISCL_FOREGROUND | DISCL_NONEXCLUSIVE | DISCL_NOWINKEY);
 	assert(SUCCEEDED(result));
 
-	
+
 }
 void Input::Update()
 {
 	// キーボード情報の取得開始
 	keyboard->Acquire();
 	//BYTE key[256] = {};
-	
+
 	memcpy(keyPre, key, sizeof(key));
 
 	// 全キーの入力状態を取得する

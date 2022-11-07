@@ -223,9 +223,9 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 #pragma region WindowsAPI初期化処理
 
     winApp = new WinApp();
-    winApp -> Initialize();
+    winApp->Initialize();
 
- //   MSG msg{};  // メッセージ
+    //   MSG msg{};  // メッセージ
 #pragma endregion
 
 #pragma region DirectX初期化処理
@@ -239,8 +239,6 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
     ComPtr<ID3D12CommandQueue> commandQueue;
     ComPtr<ID3D12DescriptorHeap> rtvHeap;
 
-    input = new Input();
-    input->Initialize(winApp);
 
 #ifdef _DEBUG
     //デバッグレイヤーをオンに
@@ -444,24 +442,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
     // DirectX初期化処理　ここまで
 #pragma endregion
-
-//     DirectInputの初期化
-    ComPtr<IDirectInput8> directInput;
-    result = DirectInput8Create(
-        w.hInstance, DIRECTINPUT_VERSION, IID_IDirectInput8, (void**)&directInput, nullptr);
-    assert(SUCCEEDED(result));
-
-    // キーボードデバイスの生成
-    ComPtr<IDirectInputDevice8> keyboard;
-    result = directInput->CreateDevice(GUID_SysKeyboard, &keyboard, NULL);
-    // 入力データ形式のセット
-    result = keyboard->SetDataFormat(&c_dfDIKeyboard); // 標準形式
-    assert(SUCCEEDED(result));
-    // 排他制御レベルのセット
-    result = keyboard->SetCooperativeLevel(
-        hwnd, DISCL_FOREGROUND | DISCL_NONEXCLUSIVE | DISCL_NOWINKEY);
-    assert(SUCCEEDED(result));
-
+    input = new Input();
+    input->Initialize(winApp);
 
 #pragma region 描画初期化処理
 
@@ -935,7 +917,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
     // ゲームループ
     while (true) {
-        if (winApp->ProcessMessage()==true)
+        if (winApp->ProcessMessage() == true)
         {//ゲームループ
             break;
         }
@@ -944,7 +926,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
         input->Update();
 
         //// 数字の0キーが押されていたら
-        if (input->Triggerkey(DIK_0)) 
+        if (input->Triggerkey(DIK_0))
         {
             OutputDebugStringA("Hit 0\n");  // 出力ウィンドウに「Hit 0」と表示
         }
@@ -1040,7 +1022,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
         // 定数バッファビュー(CBV)の設定コマンド
         commandList->SetGraphicsRootConstantBufferView(0, constBuffMaterial->GetGPUVirtualAddress());
         // SRVヒープの設定コマンド
-        ID3D12DescriptorHeap* descHeaps[] = {srvHeap.Get()};
+        ID3D12DescriptorHeap* descHeaps[] = { srvHeap.Get() };
         commandList->SetDescriptorHeaps(1, descHeaps);
         // SRVヒープの先頭ハンドルを取得（SRVを指しているはず）
         D3D12_GPU_DESCRIPTOR_HANDLE srvGpuHandle = srvHeap->GetGPUDescriptorHandleForHeapStart();

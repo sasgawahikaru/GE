@@ -11,6 +11,7 @@
 #include <wrl.h>
 #include "Input.h"
 #include "WinApp.h"
+#include "DirectXCommon.h"
 
 #pragma comment(lib, "d3d12.lib")
 #pragma comment(lib, "dxgi.lib")
@@ -219,11 +220,15 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
     Input* input = nullptr;
     WinApp* winApp = nullptr;
+    DirectXCommon* dxCommon = nullptr;
 
 #pragma region WindowsAPI初期化処理
 
     winApp = new WinApp();
     winApp->Initialize();
+
+    dxCommon = new DirectXCommon();
+    dxCommon->Initialize();
 
     //   MSG msg{};  // メッセージ
 #pragma endregion
@@ -1082,5 +1087,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
     delete winApp;
     winApp = nullptr;
+
+    delete dxCommon;
     return 0;
 }

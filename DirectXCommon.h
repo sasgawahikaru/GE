@@ -26,6 +26,7 @@ private:
 
 	void InitializeFence();
 private:
+
 	WinApp* winApp = nullptr;
 	
 	//デバイス

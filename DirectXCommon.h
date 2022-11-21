@@ -7,12 +7,17 @@
 
 class DirectXCommon
 {
+public:
 
 	void Initialize(WinApp* winApp);
 	
 	void PreDraw();
 
 	void PostDraw();
+
+	ID3D12Device* GetDevice() const { return device.Get(); }
+
+	ID3D12GraphicsCommandList* GetCommandList() const { return commandList.Get(); }
 
 private:
 	void InitializeDevice();
@@ -26,6 +31,7 @@ private:
 	void InitializeDepthBuffer();
 
 	void InitializeFence();
+
 private:
 
 	WinApp* winApp = nullptr;

@@ -7,11 +7,12 @@
 
 class DirectXCommon
 {
-	//void PreDraw();
-	//void PostDraw();
 
 	void Initialize(WinApp* winApp);
 	
+	void PreDraw();
+
+	void PostDraw();
 
 private:
 	void InitializeDevice();
@@ -47,4 +48,5 @@ private:
 	Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> dsvHeap;
 
 	Microsoft::WRL::ComPtr<ID3D12Fence> fence;
+	UINT64 fenceVal = 0;
 };

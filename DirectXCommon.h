@@ -4,6 +4,7 @@
 #include <wrl.h>
 #include "WinApp.h"
 #include <vector>
+#include <chrono>
 
 class DirectXCommon
 {
@@ -32,6 +33,9 @@ private:
 
 	void InitializeFence();
 
+	void InitializeFixFPS();
+
+	void UpdateFixFPS();
 private:
 
 	WinApp* winApp = nullptr;
@@ -55,4 +59,6 @@ private:
 
 	Microsoft::WRL::ComPtr<ID3D12Fence> fence;
 	UINT64 fenceVal = 0;
+
+	std::chrono::steady_clock::time_point reference_;
 };

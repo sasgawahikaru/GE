@@ -755,7 +755,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
             UpdateObject3d(&object3ds[i], matView, matProjection);
         }
 
-        
+        dxCommon->PreDraw();
+
         // プリミティブ形状の設定コマンド
         dxCommon->GetCommandList()->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST); // 三角形リスト
         // パイプラインステートとルートシグネチャの設定コマンド

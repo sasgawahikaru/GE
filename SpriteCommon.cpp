@@ -6,6 +6,7 @@
 #pragma comment(lib,"d3dcompiler.lib")
 
 using namespace Microsoft::WRL;
+
 void SpriteCommon::Initialize(DirectXCommon* _dxCommon)
 {
     HRESULT result{};
@@ -18,7 +19,7 @@ void SpriteCommon::Initialize(DirectXCommon* _dxCommon)
 
     // 頂点シェーダの読み込みとコンパイル
     result = D3DCompileFromFile(
-        L"Resources/shaders/BasicVS.hlsl",  // シェーダファイル名
+        L"Resources/shaders/SpriteVS.hlsl",  // シェーダファイル名
         nullptr,
         D3D_COMPILE_STANDARD_FILE_INCLUDE, // インクルード可能にする
         "main", "vs_5_0", // エントリーポイント名、シェーダーモデル指定
@@ -42,7 +43,7 @@ void SpriteCommon::Initialize(DirectXCommon* _dxCommon)
 
     // ピクセルシェーダの読み込みとコンパイル
     result = D3DCompileFromFile(
-        L"Resources/shaders/BasicPS.hlsl",   // シェーダファイル名
+        L"Resources/shaders/SpritePS.hlsl",   // シェーダファイル名
         nullptr,
         D3D_COMPILE_STANDARD_FILE_INCLUDE, // インクルード可能にする
         "main", "ps_5_0", // エントリーポイント名、シェーダーモデル指定

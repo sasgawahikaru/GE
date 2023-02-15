@@ -121,14 +121,52 @@ void Sprite::Initialize(SpriteCommon* _spriteCommon)
         result = constBuffTransform->Map(0, nullptr, (void**)&constMapTransform);
         assert(SUCCEEDED(result));
 
-        constMapTransform->mat = XMMatrixIdentity();
-        constMapTransform->mat.r[0].m128_f32[0] = 2.0f / 1280.f;
-        constMapTransform->mat.r[1].m128_f32[1] = -2.0f / 720.f;
+        XMMATRIX matWorld;
+        matWorld = XMMatrixIdentity();
 
-        constMapTransform->mat.r[3].m128_f32[0] = -1.0f;
-        constMapTransform->mat.r[3].m128_f32[1] = 1.0f;
+        rotationZ = 0.f;
+        position = { 0.f,0.f,0.f };
+
+        XMMATRIX matRot;
+        matRot = XMMatrixIdentity();
+        matRot *= XMMatrixRotationZ(XMConvertToRadians(rotationZ));
+        matWorld *= matRot;
+
+        XMMATRIX matTrans;
+        matTrans = XMMatrixTranslation(position.x, position.y, position.z);
+        matWorld *= matTrans;
+
+        XMMATRIX matProjection = XMMatrixOrthographicOffCenterLH(
+            0.f, WinApp::window_width,
+            WinApp::window_height, 0.f,
+            0.0f, 1.0f
+        );
+
+        constMapTransform->mat = matWorld * matProjection;
     }
 
+}
+void Sprite::Update()
+{
+    XMMATRIX matWorld;
+    matWorld = XMMatrixIdentity();
+
+    XMMATRIX matRot;
+    matRot = XMMatrixIdentity();
+    matRot *= XMMatrixRotationZ(XMConvertToRadians(rotationZ));
+    matWorld *= matRot;
+
+    XMMATRIX matTrans;
+    matTrans = XMMatrixTranslation(position.x, position.y, position.z);
+    matWorld *= matTrans;
+
+    XMMATRIX matProjection = XMMatrixOrthographicOffCenterLH(
+        0.f, WinApp::window_width,
+        WinApp::window_height, 0.f,
+        0.0f, 1.0f
+    );
+
+    constMapTransform->mat = matWorld * matProjection;
 }
 void Sprite::Draw()
 {

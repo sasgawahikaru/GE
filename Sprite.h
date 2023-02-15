@@ -2,9 +2,6 @@
 #include "SpriteCommon.h"
 class Sprite
 {
-private:
-	const int window_width = 1280;
-	const int window_height = 720;
 public:
 	struct Vertex
 	{
@@ -23,7 +20,7 @@ public:
 	};
 public:
 	void Initialize(SpriteCommon* _spriteCommon);
-
+	void Update();
 	void Draw();
 private:
 
@@ -34,6 +31,10 @@ private:
 	SpriteCommon* spriteCommon = nullptr;
 
 	DirectX::XMFLOAT4 color = { 1,1,1,1.0f };
+
+	float rotationZ;
+	DirectX::XMFLOAT3 position;
+
 	Microsoft::WRL::ComPtr<ID3D12Resource>vertBuff;
 
 	D3D12_VERTEX_BUFFER_VIEW vbView{};

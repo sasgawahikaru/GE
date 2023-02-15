@@ -1,6 +1,6 @@
 #include "SpriteCommon.h"
 #include "Sprite.h"
-//#include <DirectXTex.h>
+#include <DirectXTex.h>
 #include <d3dcompiler.h>
 #include <cassert>
 
@@ -17,16 +17,36 @@ void SpriteCommon::Initialize(DirectXCommon* _dxCommon)
     assert(_dxCommon);
     dxCommon = _dxCommon;
 
-    imageData = new XMFLOAT4[imageDataCount]; // ※必ず後で解放する
+    TexMetadata metadata{};
+    ScratchImage scrachImg{};
+    result = LoadFromWICFile(
+        L"Resources/texture.png",
+        WIC_FLAGS_NONE,
+        &metadata,scrachImg
+    );
+    assert(SUCCEEDED(result));
+
+    ScratchImage mipChain{};
+    result = GenerateMipMaps(
+        scrachImg.GetImages(), scrachImg.GetImageCount(), scrachImg.GetMetadata(),
+        TEX_FILTER_DEFAULT, 0, mipChain);
+    if (SUCCEEDED(result))
+    {
+        scrachImg = std::move(mipChain);
+        metadata = scrachImg.GetMetadata();
+    }
+
+    metadata.format = MakeSRGB(metadata.format);
+
+//    imageData = new XMFLOAT4[imageDataCount]; // ※必ず後で解放する
 
 // 全ピクセルの色を初期化
-    for (size_t i = 0; i < imageDataCount; i++) {
-        imageData[i].x = 1.0f;    // R
-        imageData[i].y = 0.0f;    // G
-        imageData[i].z = 0.0f;    // B
-        imageData[i].w = 1.0f;    // A
-    }
-    {
+    //for (size_t i = 0; i < imageDataCount; i++) {
+    //    imageData[i].x = 1.0f;    // R
+    //    imageData[i].y = 0.0f;    // G
+    //    imageData[i].z = 0.0f;    // B
+    //    imageData[i].w = 1.0f;    // A
+    //}
         // ヒープ設定
         D3D12_HEAP_PROPERTIES textureHeapProp{};
         textureHeapProp.Type = D3D12_HEAP_TYPE_CUSTOM;
@@ -35,11 +55,11 @@ void SpriteCommon::Initialize(DirectXCommon* _dxCommon)
         // リソース設定
         D3D12_RESOURCE_DESC textureResourceDesc{};
         textureResourceDesc.Dimension = D3D12_RESOURCE_DIMENSION_TEXTURE2D;
-        textureResourceDesc.Format = DXGI_FORMAT_R32G32B32A32_FLOAT;
-        textureResourceDesc.Width = textureWidth;  // 幅
-        textureResourceDesc.Height = textureHeight; // 高さ
-        textureResourceDesc.DepthOrArraySize = 1;
-        textureResourceDesc.MipLevels = 1;
+        textureResourceDesc.Format = metadata.format;
+        textureResourceDesc.Width = metadata.width;  // 幅
+        textureResourceDesc.Height = (UINT)metadata.height; // 高さ
+        textureResourceDesc.DepthOrArraySize = (UINT16)metadata.arraySize;
+        textureResourceDesc.MipLevels = (UINT16)metadata.mipLevels;
         textureResourceDesc.SampleDesc.Count = 1;
 
         // テクスチャバッファの生成
@@ -52,17 +72,19 @@ void SpriteCommon::Initialize(DirectXCommon* _dxCommon)
             IID_PPV_ARGS(&texBuff));
 
         // テクスチャバッファにデータ転送
-        result = texBuff->WriteToSubresource(
-            0,
-            nullptr, // 全領域へコピー
-            imageData,    // 元データアドレス
-            sizeof(XMFLOAT4) * textureWidth, // 1ラインサイズ
-            sizeof(XMFLOAT4) * imageDataCount // 全サイズ
-        );
+        for (size_t i = 0; i < metadata.mipLevels; i++)
+        {
+            const Image* img = scrachImg.GetImage(i, 0, 0);
 
-        // 元データ解放
-        delete[] imageData;
-    }
+            result = texBuff->WriteToSubresource(
+                (UINT)i,
+                nullptr, // 全領域へコピー
+                img->pixels,    // 元データアドレス
+                (UINT)img->rowPitch, // 1ラインサイズ
+                (UINT)img->slicePitch // 全サイズ
+            );
+            assert(SUCCEEDED(result));
+        }
 
     // SRVの最大個数
     const size_t kMaxSRVCount = 2056;
@@ -82,7 +104,7 @@ void SpriteCommon::Initialize(DirectXCommon* _dxCommon)
 
     // シェーダリソースビュー設定
     D3D12_SHADER_RESOURCE_VIEW_DESC srvDesc{}; // 設定構造体
-    srvDesc.Format = DXGI_FORMAT_R32G32B32A32_FLOAT;//RGBA float
+    srvDesc.Format = textureResourceDesc.Format;//RGBA float
     srvDesc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
     srvDesc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D;//2Dテクスチャ
     srvDesc.Texture2D.MipLevels = 1;
@@ -178,9 +200,14 @@ void SpriteCommon::Initialize(DirectXCommon* _dxCommon)
     blenddesc.SrcBlendAlpha = D3D12_BLEND_ONE;
     blenddesc.DestBlendAlpha = D3D12_BLEND_ZERO;
 
-    blenddesc.BlendOp = D3D12_BLEND_OP_ADD;
+ /* blenddesc.BlendOp = D3D12_BLEND_OP_ADD;
     blenddesc.SrcBlend = D3D12_BLEND_ONE;
-    blenddesc.DestBlend = D3D12_BLEND_ONE;
+    blenddesc.DestBlend = D3D12_BLEND_ONE;*/
+
+    // 半透明合成
+    blenddesc.BlendOp = D3D12_BLEND_OP_ADD;             // 加算
+    blenddesc.SrcBlend = D3D12_BLEND_SRC_ALPHA;         // ソースのアルファ値
+    blenddesc.DestBlend = D3D12_BLEND_INV_SRC_ALPHA;    // 1.0f-ソースのアルファ値
 
     pipelineDesc.InputLayout.pInputElementDescs = inputLayout;
     pipelineDesc.InputLayout.NumElements = _countof(inputLayout);
@@ -198,7 +225,7 @@ void SpriteCommon::Initialize(DirectXCommon* _dxCommon)
     descriptorRange.OffsetInDescriptorsFromTableStart = D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND;
 
     // ルートパラメータの設定
-    D3D12_ROOT_PARAMETER rootParam[2] = {};
+    D3D12_ROOT_PARAMETER rootParam[3] = {};
     // 定数バッファ0番
     rootParam[0].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;   // 種類
     rootParam[0].Descriptor.ShaderRegister = 0;                   // 定数バッファ番号
@@ -209,6 +236,11 @@ void SpriteCommon::Initialize(DirectXCommon* _dxCommon)
     rootParam[1].DescriptorTable.pDescriptorRanges = &descriptorRange;		  //デスクリプタレンジ
     rootParam[1].DescriptorTable.NumDescriptorRanges = 1;              		  //デスクリプタレンジ数
     rootParam[1].ShaderVisibility = D3D12_SHADER_VISIBILITY_ALL;
+
+    rootParam[2].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;   //種類
+    rootParam[2].Descriptor.ShaderRegister = 1;    	  //デスクリプタレンジ
+    rootParam[2].Descriptor.RegisterSpace = 0;             		  //デスクリプタレンジ数
+    rootParam[2].ShaderVisibility = D3D12_SHADER_VISIBILITY_ALL;
     
     // テクスチャサンプラーの設定
     D3D12_STATIC_SAMPLER_DESC samplerDesc{};

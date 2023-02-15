@@ -26,7 +26,7 @@ private:
 	Microsoft::WRL::ComPtr<ID3D12PipelineState> pipelineState;
 	Microsoft::WRL::ComPtr<ID3D12RootSignature> rootSignature;
 
-    DirectX::XMFLOAT4* imageData;
+   // DirectX::XMFLOAT4* imageData;
     Microsoft::WRL::ComPtr<ID3D12Resource> texBuff;
     Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> srvHeap;
 };

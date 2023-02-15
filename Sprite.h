@@ -2,6 +2,9 @@
 #include "SpriteCommon.h"
 class Sprite
 {
+private:
+	const int window_width = 1280;
+	const int window_height = 720;
 public:
 	struct Vertex
 	{
@@ -16,7 +19,7 @@ public:
 
 	struct ConstBufferDataTransform
 	{
-		DirectX::XMFLOAT4 mat;
+		DirectX::XMMATRIX mat;
 	};
 public:
 	void Initialize(SpriteCommon* _spriteCommon);
@@ -30,12 +33,15 @@ private:
 
 	SpriteCommon* spriteCommon = nullptr;
 
-	DirectX::XMFLOAT4 color = { 1,0,0,0.5f };
+	DirectX::XMFLOAT4 color = { 1,1,1,1.0f };
 	Microsoft::WRL::ComPtr<ID3D12Resource>vertBuff;
 
 	D3D12_VERTEX_BUFFER_VIEW vbView{};
 
 	Microsoft::WRL::ComPtr<ID3D12Resource>constBuffMaterial;
 	ConstBufferDataMaterial* constMapMaterial = nullptr;
+
+	Microsoft::WRL::ComPtr<ID3D12Resource>constBuffTransform;
+	ConstBufferDataTransform* constMapTransform = nullptr;
 };
 

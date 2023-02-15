@@ -1,19 +1,34 @@
 #include "Sprite.h"
+#include "WinApp.h"
+#include<DirectXTex.h>
 
 using namespace DirectX;
 using namespace Microsoft::WRL;
 void Sprite::Initialize(SpriteCommon* _spriteCommon)
 {
     HRESULT result{};
+    ID3D12Device* device = nullptr;
     assert(_spriteCommon);
     spriteCommon = _spriteCommon;
 
-    XMFLOAT3 vertices[] = {
-        {-0.5f,-0.5f,0.0f},
-        {-0.5f,+0.5f,0.0f},
-        {+0.5f,-0.5f,0.0f},
+    //XMFLOAT3 vertices[] = {
+    //   {  -0.5f,-0.5f,0.0f},
+    //   {  -0.5f,+0.5f,0.0f},
+    //   {  +0.5f,-0.5f,0.0f},
+    //   {  +0.5f,+0.5f,0.0f},
+    //};
+    Vertex vertices[] = {
+    {{ -0.4f, -0.7f,0.0f},{0.0f,1.0f}},
+    {{ -0.4f, +0.7f,0.0f},{0.0f,0.0f}},
+    {{ +0.4f, -0.7f,0.0f},{1.0f,1.0f}},
+    {{ +0.4f, +0.7f,0.0f},{1.0f,0.0f}},
     };
-    UINT sizeVB = static_cast<UINT>(sizeof(XMFLOAT3) * _countof(vertices));
+    //verticesNum = _countof(vertices);
+    unsigned short indices[] = {
+    0,1,2,
+    1,2,3,
+    };
+    UINT sizeVB = static_cast<UINT>(sizeof(vertices[0]) * _countof(vertices));
 
     // 頂点バッファの設定
     D3D12_HEAP_PROPERTIES heapProp{};   // ヒープ設定
@@ -38,7 +53,7 @@ void Sprite::Initialize(SpriteCommon* _spriteCommon)
         IID_PPV_ARGS(&vertBuff));
     assert(SUCCEEDED(result));
 
-    XMFLOAT3* vertMap = nullptr;
+    Vertex* vertMap = nullptr;
     result = vertBuff->Map(0, nullptr, (void**)&vertMap);
     assert(SUCCEEDED(result));
 
@@ -50,10 +65,11 @@ void Sprite::Initialize(SpriteCommon* _spriteCommon)
     vbView.BufferLocation = vertBuff->GetGPUVirtualAddress();
     vbView.SizeInBytes = sizeVB;
     vbView.StrideInBytes = sizeof(vertices[0]);
+
 }
 void Sprite::Draw()
 {
     spriteCommon->GetDirectXCommon()->GetCommandList()->IASetVertexBuffers(0, 1, &vbView);
 
-    spriteCommon->GetDirectXCommon()->GetCommandList()->DrawInstanced(3, 1, 0, 0);
+    spriteCommon->GetDirectXCommon()->GetCommandList()->DrawInstanced(4, 1, 0, 0);
 }

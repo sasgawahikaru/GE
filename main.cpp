@@ -33,8 +33,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 #pragma region
     Sprite* sprite = nullptr;
     sprite = new Sprite();
-    sprite->Initialize(spriteCommon);
-    sprite->SetTextureIndex(1);
+    sprite->Initialize(spriteCommon,1);
 
     //sprite->SetColor({ 0,1,1,1 });
 #pragma endregion

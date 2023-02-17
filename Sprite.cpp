@@ -3,32 +3,57 @@
 
 using namespace DirectX;
 using namespace Microsoft::WRL;
-void Sprite::Initialize(SpriteCommon* _spriteCommon)
+void Sprite::Initialize(SpriteCommon* _spriteCommon, uint32_t textureIndex)
 {
     HRESULT result{};
     assert(_spriteCommon);
     spriteCommon = _spriteCommon;
 
-    float left = (0.0f - anchorPoint.x) * size.x;
-    float right = (1.0f - anchorPoint.x) * size.x;
-    float top = (0.0f - anchorPoint.y) * size.y;
-    float bottom = (1.0f - anchorPoint.y) * size.y;
-
-    if (IsFlipX) {
-        left = -left;
-        right = -right;
-    }
-    if (IsFlipY)
+    if (textureIndex != UINT32_MAX)
     {
-        top = -top;
-        bottom = -bottom;
+        this->textureIndex = textureIndex;
+        AdjustTextureSize();
+        size = textureSize;
     }
 
-    vertices[LB] = { { left, bottom,0.0f},{0.0f,1.0f} };
-    vertices[LT] = { { left,   top,0.0f},{0.0f,0.0f} } ;
-    vertices[RB] = { {right, bottom,0.0f},{1.0f,1.0f} };
-    vertices[RT] = { {right,   top,0.0f},{1.0f,0.0f} };
+    {
+        ID3D12Resource* textureBuffer = spriteCommon->GetTextureBuffer(textureIndex);
+        if (textureBuffer)
+        {
+            D3D12_RESOURCE_DESC resDesc = textureBuffer->GetDesc();
 
+            float tex_left = textureLeftTop.x / resDesc.Width;
+            float tex_right = (textureLeftTop.x + textureSize.x) / resDesc.Width;
+            float tex_top = textureLeftTop.y / resDesc.Height;
+            float tex_bottom = (textureLeftTop.y + textureSize.y) / resDesc.Height;
+
+            vertices[LB].uv = { tex_left,tex_bottom };
+            vertices[LT].uv = { tex_left,tex_top };
+            vertices[RB].uv = { tex_right,tex_bottom };
+            vertices[RT].uv = { tex_right,tex_top };
+        }
+    }
+    {
+        float left = (0.0f - anchorPoint.x) * size.x;
+        float right = (1.0f - anchorPoint.x) * size.x;
+        float top = (0.0f - anchorPoint.y) * size.y;
+        float bottom = (1.0f - anchorPoint.y) * size.y;
+
+        if (IsFlipX) {
+            left = -left;
+            right = -right;
+        }
+        if (IsFlipY)
+        {
+            top = -top;
+            bottom = -bottom;
+        }
+
+        vertices[LB].pos = { left, bottom,0.0f };
+        vertices[LT].pos = { left,   top,0.f };
+        vertices[RB].pos = { right, bottom,0.0f };
+        vertices[RT].pos = { right,   top,0.0f };
+    }
     UINT sizeVB = static_cast<UINT>(sizeof(vertices[0]) * _countof(vertices));
 
     // 頂点バッファの設定
@@ -149,26 +174,45 @@ void Sprite::Initialize(SpriteCommon* _spriteCommon)
 void Sprite::Update()
 {
 
-    float left = (0.0f - anchorPoint.x) * size.x;
-    float right = (1.0f - anchorPoint.x) * size.x;
-    float top = (0.0f - anchorPoint.y) * size.y;
-    float bottom = (1.0f - anchorPoint.y) * size.y;
-
-    if (IsFlipX) {
-        left = -left;
-        right = -right;
-    }
-    if (IsFlipY)
     {
-        top = -top;
-        bottom = -bottom;
+        ID3D12Resource* textureBuffer = spriteCommon->GetTextureBuffer(textureIndex);
+        if (textureBuffer)
+        {
+            D3D12_RESOURCE_DESC resDesc = textureBuffer->GetDesc();
+
+            float tex_left = textureLeftTop.x / resDesc.Width;
+            float tex_right = (textureLeftTop.x + textureSize.x) / resDesc.Width;
+            float tex_top = textureLeftTop.y / resDesc.Height;
+            float tex_bottom = (textureLeftTop.y + textureSize.y) / resDesc.Height;
+
+            vertices[LB].uv = { tex_left,tex_bottom };
+            vertices[LT].uv = { tex_left,tex_top };
+            vertices[RB].uv = { tex_right,tex_bottom };
+            vertices[RT].uv = { tex_right,tex_top };
+        }
     }
 
-    vertices[LB] = { { left, bottom,0.0f},{0.0f,1.0f} };
-    vertices[LT] = { { left,   top,0.0f},{0.0f,0.0f} };
-    vertices[RB] = { {right, bottom,0.0f},{1.0f,1.0f} };
-    vertices[RT] = { {right,   top,0.0f},{1.0f,0.0f} };
+    {
+        float left = (0.0f - anchorPoint.x) * size.x;
+        float right = (1.0f - anchorPoint.x) * size.x;
+        float top = (0.0f - anchorPoint.y) * size.y;
+        float bottom = (1.0f - anchorPoint.y) * size.y;
 
+        if (IsFlipX) {
+            left = -left;
+            right = -right;
+        }
+        if (IsFlipY)
+        {
+            top = -top;
+            bottom = -bottom;
+        }
+
+        vertices[LB].pos = { left, bottom,0.0f };
+        vertices[LT].pos = { left,   top,0.f };
+        vertices[RB].pos = { right, bottom,0.0f };
+        vertices[RT].pos = { right,   top,0.0f };
+    }
     Vertex* vertMap = nullptr;
     HRESULT result = vertBuff->Map(0, nullptr, (void**)&vertMap);
     assert(SUCCEEDED(result));
@@ -213,4 +257,16 @@ void Sprite::Draw()
 	spriteCommon->GetDirectXCommon()->GetCommandList()->SetGraphicsRootConstantBufferView(2, constBuffTransform->GetGPUVirtualAddress());
 
 	spriteCommon->GetDirectXCommon()->GetCommandList()->DrawInstanced(4, 1, 0, 0);
+}
+
+void Sprite::AdjustTextureSize()
+{
+    ID3D12Resource* textureBuffer = spriteCommon->GetTextureBuffer(textureIndex);
+    assert(textureBuffer);
+
+    D3D12_RESOURCE_DESC resDesc = textureBuffer->GetDesc();
+
+    textureSize.x = static_cast<float>(resDesc.Width);
+    textureSize.y = static_cast<float>(resDesc.Height);
+
 }

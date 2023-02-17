@@ -26,7 +26,7 @@ public:
 	};
 
 public:
-	void Initialize(SpriteCommon* _spriteCommon);
+	void Initialize(SpriteCommon* _spriteCommon, uint32_t textureIndex = UINT32_MAX);
 	void Update();
 	void Draw();
 
@@ -39,6 +39,9 @@ public:
 	const float& GetRotationZ()const { return rotationZ; }
 	const DirectX::XMFLOAT2& GetSize()const { return size; }
 	const DirectX::XMFLOAT2& GetAnchorPoint()const { return anchorPoint; }
+
+	const DirectX::XMFLOAT2& GetTextureLeftTop()const { return textureLeftTop; }
+	const DirectX::XMFLOAT2& GetTextureSize()const { return textureSize; }
 
 
 	const bool& GetIsFlipX() const { return IsFlipX; }
@@ -54,10 +57,15 @@ public:
 	void SetSize(const DirectX::XMFLOAT2& size) {this->size = size; }
 	void SetAncharPoint(const DirectX::XMFLOAT2& anchorPoint) { this->anchorPoint = anchorPoint; }
 
+	void SetTextureLeftTop(const DirectX::XMFLOAT2 leftTop) { this->textureLeftTop = leftTop; }
+	void SetTextureSize(const DirectX::XMFLOAT2 size) { this->textureSize = size; }
+
 	void SetIsFlipX(const bool& isFlipX) { this->IsFlipX = isFlipX; }
 	void SetIsFlipY(const bool& isFlipY) { this->IsFlipY = isFlipY; }
 	void SetInvisible(const bool& IsInvisible) { this->IsFlipY = IsInvisible; }
 
+private:
+	void AdjustTextureSize();
 private:
 
 	//DirectX::XMFLOAT3 scale = { 1.f,1.f,1.f };
@@ -74,6 +82,9 @@ private:
 	float rotationZ = 0.f;
 	DirectX::XMFLOAT2 size = { 100.f,100.f };
 	DirectX::XMFLOAT2 anchorPoint = { 0.f,0.f };
+
+	DirectX::XMFLOAT2 textureLeftTop = { 0.f,0.f };
+	DirectX::XMFLOAT2 textureSize = { 100.f,100.f };
 
 	bool IsFlipX = false;
 	bool IsFlipY = false;

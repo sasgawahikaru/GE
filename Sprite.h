@@ -30,17 +30,25 @@ public:
 	void Update();
 	void Draw();
 
+
 	const DirectX::XMFLOAT4 GetColor()const { return color; }
-	const DirectX::XMFLOAT2& GetPosition()const { return position; }
+
+	const uint32_t GetTextureIndex()const { return textureIndex; }
+
+	const DirectX::XMFLOAT2& GetPosition()const { return position;}
 	const float& GetRotationZ()const { return rotationZ; }
 	const DirectX::XMFLOAT2& GetSize()const { return size; }
 	const DirectX::XMFLOAT2& GetAnchorPoint()const { return anchorPoint; }
+
 
 	const bool& GetIsFlipX() const { return IsFlipX; }
 	const bool& GetIsFlipY() const { return IsFlipY; }
 	const bool& GetInvisible() const { return IsInvisible; }
 
 	void SetColor(DirectX::XMFLOAT4 color) { this->color = color; }
+
+	void SetTextureIndex(uint32_t index) { this->textureIndex = index; }
+
 	void SetPosition(const DirectX::XMFLOAT2& position) { this->position = position; }
 	void SetRotationZ(const float& rotationZ) { this->rotationZ = rotationZ; }
 	void SetSize(const DirectX::XMFLOAT2& size) {this->size = size; }
@@ -58,9 +66,11 @@ private:
 
 	SpriteCommon* spriteCommon = nullptr;
 
+	uint32_t textureIndex = 0;
+
 	DirectX::XMFLOAT4 color = { 1,1,1,1 };
 
-	DirectX::XMFLOAT2 position{ 100.f,100.f };
+	DirectX::XMFLOAT2 position{ 0.f,0.f };
 	float rotationZ = 0.f;
 	DirectX::XMFLOAT2 size = { 100.f,100.f };
 	DirectX::XMFLOAT2 anchorPoint = { 0.f,0.f };

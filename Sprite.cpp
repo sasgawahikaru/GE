@@ -202,10 +202,9 @@ void Sprite::Update()
 }
 void Sprite::Draw()
 {
-    if (IsInvisible)
-    {
-        return;
-    }
+    if (IsInvisible) return;
+
+    spriteCommon->SetTextureCommands(textureIndex);
 
     spriteCommon->GetDirectXCommon()->GetCommandList()->IASetVertexBuffers(0, 1, &vbView);
 

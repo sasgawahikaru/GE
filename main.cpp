@@ -1,5 +1,4 @@
-﻿
-#include "Input.h"
+﻿#include "Input.h"
 #include "WinApp.h"
 #include "DirectXCommon.h"
 
@@ -25,6 +24,9 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
     SpriteCommon* spriteCommon = nullptr;
     spriteCommon = new SpriteCommon();
     spriteCommon->Initialize(dxCommon);
+    spriteCommon->LoadTexture(0,"texture.png");
+    spriteCommon->LoadTexture(1,"reimu.png");
+
 
 #pragma endregion
 
@@ -32,7 +34,9 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
     Sprite* sprite = nullptr;
     sprite = new Sprite();
     sprite->Initialize(spriteCommon);
-    sprite->SetColor({ 0,1,1,1 });
+    sprite->SetTextureIndex(1);
+
+    //sprite->SetColor({ 0,1,1,1 });
 #pragma endregion
 
     // ゲームループ
@@ -59,6 +63,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 #pragma region
         spriteCommon->PreDraw();
         sprite->Draw();
+        spriteCommon->PostDraw();
 
 #pragma endregion
 

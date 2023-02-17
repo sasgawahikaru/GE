@@ -2,6 +2,7 @@
 #include <DirectXMath.h>
 #include <d3dx12.h>
 #include <wrl.h>
+#include <array>
 #include "DirectXCommon.h"
 class SpriteCommon
 {
@@ -19,7 +20,18 @@ public:
 
 	void PreDraw();
 
+	void PostDraw();
+
+    void LoadTexture(uint32_t index, const std::string& fileName);
+
+    void SetTextureCommands(uint32_t index);
+
 	DirectXCommon* GetDirectXCommon() { return dxCommon; }
+private:
+    // SRVÇÃç≈ëÂå¬êî
+    static const size_t kMaxSRVCount = 2056;
+
+    static std::string kDefaultTextureDirectoryPath;
 private:
 	DirectXCommon* dxCommon;
 
@@ -27,7 +39,7 @@ private:
 	Microsoft::WRL::ComPtr<ID3D12RootSignature> rootSignature;
 
    // DirectX::XMFLOAT4* imageData;
-    Microsoft::WRL::ComPtr<ID3D12Resource> texBuff;
+    std::array<Microsoft::WRL::ComPtr<ID3D12Resource>, kMaxSRVCount> texBuff;
     Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> srvHeap;
 };
 

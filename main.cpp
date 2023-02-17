@@ -32,6 +32,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
     Sprite* sprite = nullptr;
     sprite = new Sprite();
     sprite->Initialize(spriteCommon);
+    sprite->SetColor({ 0,1,1,1 });
 #pragma endregion
 
     // ゲームループ
@@ -46,6 +47,12 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 #pragma endregion
 
 #pragma region
+
+        //DirectX::XMFLOAT2 size = sprite->GetSize();
+        //size.y += 1.0f;
+        //sprite->SetSize(size);
+        sprite->Update();
+
 #pragma endregion
 
         dxCommon->PreDraw();

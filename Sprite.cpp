@@ -9,23 +9,26 @@ void Sprite::Initialize(SpriteCommon* _spriteCommon)
     assert(_spriteCommon);
     spriteCommon = _spriteCommon;
 
-    //XMFLOAT3 vertices[] = {
-    //   {  -0.5f,-0.5f,0.0f},
-    //   {  -0.5f,+0.5f,0.0f},
-    //   {  +0.5f,-0.5f,0.0f},
-    //   {  +0.5f,+0.5f,0.0f},
-    //};
-    Vertex vertices[] = {
-    {{  0.f, 100.f,0.0f},{0.0f,1.0f}},
-    {{  0.f,   0.f,0.0f},{0.0f,0.0f}},
-    {{100.f, 100.f,0.0f},{1.0f,1.0f}},
-    {{100.f,   0.f,0.0f},{1.0f,0.0f}},
-    };
-    //verticesNum = _countof(vertices);
-    //unsigned short indices[] = {
-    //0,1,2,
-    //1,2,3,
-    //};
+    float left = (0.0f - anchorPoint.x) * size.x;
+    float right = (1.0f - anchorPoint.x) * size.x;
+    float top = (0.0f - anchorPoint.y) * size.y;
+    float bottom = (1.0f - anchorPoint.y) * size.y;
+
+    if (IsFlipX) {
+        left = -left;
+        right = -right;
+    }
+    if (IsFlipY)
+    {
+        top = -top;
+        bottom = -bottom;
+    }
+
+    vertices[LB] = { { left, bottom,0.0f},{0.0f,1.0f} };
+    vertices[LT] = { { left,   top,0.0f},{0.0f,0.0f} } ;
+    vertices[RB] = { {right, bottom,0.0f},{1.0f,1.0f} };
+    vertices[RT] = { {right,   top,0.0f},{1.0f,0.0f} };
+
     UINT sizeVB = static_cast<UINT>(sizeof(vertices[0]) * _countof(vertices));
 
     // 頂点バッファの設定
@@ -89,8 +92,8 @@ void Sprite::Initialize(SpriteCommon* _spriteCommon)
 
         result = constBuffMaterial->Map(0, nullptr, (void**)&constMapMaterial);
         assert(SUCCEEDED(result));
-
         constMapMaterial->color = color;
+        
     }
 
 
@@ -124,16 +127,13 @@ void Sprite::Initialize(SpriteCommon* _spriteCommon)
         XMMATRIX matWorld;
         matWorld = XMMatrixIdentity();
 
-        rotationZ = 0.f;
-        position = { 0.f,0.f,0.f };
-
         XMMATRIX matRot;
         matRot = XMMatrixIdentity();
         matRot *= XMMatrixRotationZ(XMConvertToRadians(rotationZ));
         matWorld *= matRot;
 
         XMMATRIX matTrans;
-        matTrans = XMMatrixTranslation(position.x, position.y, position.z);
+        matTrans = XMMatrixTranslation(position.x, position.y, 0.f);
         matWorld *= matTrans;
 
         XMMATRIX matProjection = XMMatrixOrthographicOffCenterLH(
@@ -148,6 +148,38 @@ void Sprite::Initialize(SpriteCommon* _spriteCommon)
 }
 void Sprite::Update()
 {
+
+    float left = (0.0f - anchorPoint.x) * size.x;
+    float right = (1.0f - anchorPoint.x) * size.x;
+    float top = (0.0f - anchorPoint.y) * size.y;
+    float bottom = (1.0f - anchorPoint.y) * size.y;
+
+    if (IsFlipX) {
+        left = -left;
+        right = -right;
+    }
+    if (IsFlipY)
+    {
+        top = -top;
+        bottom = -bottom;
+    }
+
+    vertices[LB] = { { left, bottom,0.0f},{0.0f,1.0f} };
+    vertices[LT] = { { left,   top,0.0f},{0.0f,0.0f} };
+    vertices[RB] = { {right, bottom,0.0f},{1.0f,1.0f} };
+    vertices[RT] = { {right,   top,0.0f},{1.0f,0.0f} };
+
+    Vertex* vertMap = nullptr;
+    HRESULT result = vertBuff->Map(0, nullptr, (void**)&vertMap);
+    assert(SUCCEEDED(result));
+
+    for (int i = 0; i < _countof(vertices); i++) {
+        vertMap[i] = vertices[i];
+    }
+    vertBuff->Unmap(0, nullptr);
+
+    constMapMaterial->color = color;
+
     XMMATRIX matWorld;
     matWorld = XMMatrixIdentity();
 
@@ -157,7 +189,7 @@ void Sprite::Update()
     matWorld *= matRot;
 
     XMMATRIX matTrans;
-    matTrans = XMMatrixTranslation(position.x, position.y, position.z);
+    matTrans = XMMatrixTranslation(position.x, position.y, 0.f);
     matWorld *= matTrans;
 
     XMMATRIX matProjection = XMMatrixOrthographicOffCenterLH(
@@ -170,6 +202,11 @@ void Sprite::Update()
 }
 void Sprite::Draw()
 {
+    if (IsInvisible)
+    {
+        return;
+    }
+
     spriteCommon->GetDirectXCommon()->GetCommandList()->IASetVertexBuffers(0, 1, &vbView);
 
 	spriteCommon->GetDirectXCommon()->GetCommandList()->SetGraphicsRootConstantBufferView(0, constBuffMaterial->GetGPUVirtualAddress());
